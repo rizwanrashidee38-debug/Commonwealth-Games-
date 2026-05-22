@@ -1,5 +1,5 @@
 
-<!DOCTYPE html>
+                                                                               <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -59,7 +59,6 @@
         <p>Scout Talent, Manage Budgets, and Compete Through History</p>
     </header>
 
-    <!-- SCREEN 1: WELCOME -->
     <div id="screen-welcome" class="container full-width">
         <div class="card" style="text-align: center; padding: 40px;">
             <h2>📜 Presidential Appointment</h2>
@@ -75,7 +74,6 @@
         </div>
     </div>
 
-    <!-- SCREEN 2: DRAFT ROOM (Pre-Games Budgeting) -->
     <div id="screen-draft" class="container full-width hidden">
         <div class="card">
             <div class="host-banner" id="draft-host-banner"></div>
@@ -108,12 +106,10 @@
         </div>
     </div>
 
-    <!-- SCREEN 3: GAMES HUB (Arena & Tallies) -->
     <div id="screen-games" class="container hidden">
         <div>
             <div class="host-banner" id="games-host-banner"></div>
             
-            <!-- Active Arena -->
             <div id="arena-card" class="card hidden" style="border: 3px solid var(--secondary);">
                 <h2 id="arena-title">🏟️ The Arena</h2>
                 <div style="display: flex; justify-content: space-between; background: #f1f5f9; padding: 10px; border-radius: 6px; font-weight: bold; margin-bottom: 15px;">
@@ -139,7 +135,6 @@
                 </div>
             </div>
 
-            <!-- Timetable -->
             <div class="card">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <h2>📅 Timetable</h2>
@@ -154,7 +149,6 @@
             </div>
         </div>
 
-        <!-- Right Column: Tallies -->
         <div>
             <div class="card">
                 <h2>📍 Current Edition Tally</h2>
@@ -213,7 +207,7 @@
             "Sierra Leone": { gdp: 1, pop: 3, reg: "African" }, "Maldives": { gdp: 3, pop: 1, reg: "Indian" }, "Brunei": { gdp: 5, pop: 1, reg: "SEAsian" },
             "Vanuatu": { gdp: 2, pop: 1, reg: "Pacific" }, "Tonga": { gdp: 2, pop: 1, reg: "Pacific" }, "Lesotho": { gdp: 1, pop: 2, reg: "African" },
             "Dominica": { gdp: 2, pop: 1, reg: "Caribbean" }, "Belize": { gdp: 2, pop: 1, reg: "Caribbean" }
-        ];
+        };
 
         const sportsList = [
             { id: 0, name: "Athletics", cat: "100m Sprint", type: "timed", min: 9.6, max: 11.5 },
@@ -241,7 +235,7 @@
             { id: 22, name: "Squash", cat: "Singles", type: "dist", min: 30, max: 90 },
             { id: 23, name: "Lawn Bowls", cat: "Singles", type: "dist", min: 10, max: 21 },
             { id: 24, name: "Canoe", cat: "K-1 Sprint", type: "timed", min: 34.0, max: 40.0 }
-        ]; // Trimmed to 25 to fit UI nicely, still highly comprehensive
+        ];
 
         // --- GLOBAL VARIABLES ---
         let pName = "", pCountry = "";
@@ -250,20 +244,36 @@
         let draftPool = [], playerRoster = {};
         let currentMedals = {}, overallMedals = {};
         let sportsStatus = [];
-        
         let activeSport = null, activeChance = 0, activeScores = [], tileVals = [];
 
-        // --- INITIALIZATION ---
-        window.onload = () => {
+        // --- MOBILE-SAFE INITIALIZATION ---
+        function initApp() {
             const select = document.getElementById("player-country");
-            Object.keys(nations).sort().forEach(c => select.add(new Option(c, c)));
+            select.innerHTML = ""; // Clear fallback
+            
+            // Populate Nations
+            Object.keys(nations).sort().forEach(c => {
+                let opt = document.createElement("option");
+                opt.value = c;
+                opt.textContent = c;
+                select.appendChild(opt);
+            });
+            
+            // Initialize Medal Tracker
             Object.keys(nations).forEach(c => { overallMedals[c] = {g:0, s:0, b:0}; });
+            
+            // Force First UI Update
             updateCountryInfo();
-        };
+        }
 
         function updateCountryInfo() {
-            let c = document.getElementById("player-country").value;
+            const select = document.getElementById("player-country");
+            if (!select || !select.value) return; // Safety check
+            
+            let c = select.value;
             let n = nations[c];
+            if (!n) return;
+
             document.getElementById("country-info").innerHTML = `<b>Economic Power (GDP):</b> ${"⭐".repeat(n.gdp)}/5<br><b>Demographics:</b> Tier ${n.pop}/5`;
         }
 
@@ -287,7 +297,7 @@
             document.getElementById("screen-games").classList.add("hidden");
             
             let host = gameHosts[hostIndex % gameHosts.length];
-            let year = host.year + Math.floor(hostIndex / gameHosts.length) * 24; // 24 yrs per loop
+            let year = host.year + Math.floor(hostIndex / gameHosts.length) * 24;
             document.getElementById("draft-host-banner").innerText = `Pre-Games Draft: ${year} ${host.city}`;
             document.getElementById("chairman-title").innerText = `Chairman ${pName} - ${pCountry} Committee`;
 
@@ -296,7 +306,6 @@
             sportsStatus = sportsList.map(s => ({...s, done: false}));
             playerRoster = {};
             
-            // Calculate Budget: GDP * $450,000 + Population Bonus
             budget = (nations[pCountry].gdp * 450000) + (nations[pCountry].pop * 50000);
             currentBudget = budget;
             updateBudgetUI();
@@ -314,7 +323,6 @@
             tbody.innerHTML = "";
 
             sportsList.forEach(sport => {
-                // Generate a randomized athlete based on country GDP (higher GDP = higher base strength)
                 let baseStr = 40 + (nations[pCountry].gdp * 8);
                 let str = Math.min(99, Math.floor(baseStr + (Math.random() * 30 - 10)));
                 let cost = Math.floor(Math.pow(Math.max(1, str - 30), 2) * 90); 
@@ -345,14 +353,12 @@
             let row = document.getElementById(`draft-row-${id}`);
 
             if (playerRoster[id]) {
-                // Undraft
                 delete playerRoster[id];
                 currentBudget += athlete.cost;
                 btn.innerText = "Draft";
                 btn.classList.remove("btn-danger");
                 row.classList.remove("drafted-row");
             } else {
-                // Draft
                 if (currentBudget >= athlete.cost) {
                     playerRoster[id] = athlete;
                     currentBudget -= athlete.cost;
@@ -417,12 +423,11 @@
             document.getElementById("current-score").innerText = `Score: ${total.toFixed(2)} ${unit}`;
 
             let athStr = playerRoster[activeSport.id].str;
-            let buff = (athStr / 100); // 0.5 to 0.99
+            let buff = (athStr / 100);
 
             tileVals = [];
             for (let i = 0; i < 4; i++) {
                 let base = (activeSport.min + Math.random()*(activeSport.max - activeSport.min))/10;
-                // High strength = lower time (good) OR higher dist (good)
                 let val = activeSport.type === "timed" ? base * (1.2 - (buff*0.4)) : base * (0.8 + (buff*0.5));
                 tileVals.push(val);
             }
@@ -451,7 +456,6 @@
                 board.push({ nat: pCountry, ath: playerRoster[activeSport.id].name, score: playerScore, isP: true });
             }
 
-            // Simulate 9 AI opponents
             let aiPool = Object.keys(nations).filter(n => n !== pCountry).sort(()=>0.5 - Math.random()).slice(0, 9);
             aiPool.forEach(aiNat => {
                 let aiStr = 40 + (nations[aiNat].gdp * 8) + (Math.random()*20 - 10);
@@ -466,10 +470,9 @@
 
             board.sort((a,b) => activeSport.type === "timed" ? a.score - b.score : b.score - a.score);
 
-            // Medals
-            currentMedals[board[0].nat].g++; overallMedals[board[0].nat].g++;
-            currentMedals[board[1].nat].s++; overallMedals[board[1].nat].s++;
-            currentMedals[board[2].nat].b++; overallMedals[board[2].nat].b++;
+            currentMedals[board.nat].g++; overallMedals[board.nat].g++;
+            currentMedals[board.nat].s++; overallMedals[board.nat].s++;
+            currentMedals[board.nat].b++; overallMedals[board.nat].b++;
 
             activeSport.done = true;
 
@@ -496,13 +499,11 @@
             window.scrollTo({top:0, behavior:"smooth"});
         }
 
-        // --- FAST FORWARD & TALLIES ---
         function simulateRemaining() {
             if(confirm("Simulate all unfinished events and move to the next host city cycle?")) {
                 sportsStatus.forEach(s => {
                     if(!s.done) {
                         activeSport = s;
-                        // Auto sim player if drafted but skipped
                         let pScore = null;
                         if(playerRoster[s.id]) {
                             let str = playerRoster[s.id].str;
@@ -541,10 +542,10 @@
             updateT(currentMedals, "current-tally-body");
             updateT(overallMedals, "overall-tally-body");
         }
+
+        // Fire the initialization immediately instead of waiting for window.onload
+        initApp();
     </script>
 </body>
 </html>
-
-                                                                               
-                            
-                                                                                                        
+                 
