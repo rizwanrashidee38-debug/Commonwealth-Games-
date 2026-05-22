@@ -1,551 +1,640 @@
 
-                                                                               <!DOCTYPE html>
+                                                                                                                                                           <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Commonwealth Games: Executive Director</title>
+    <title>Commonwealth Games Manager</title>
     <style>
-        :root { --primary: #002f6c; --secondary: #ffcd00; --success: #16a34a; --danger: #dc2626; --dark: #0f172a; --light: #f8fafc; --gold: #ffd700; --silver: #c0c0c0; --bronze: #cd7f32; }
-        * { box-sizing: border-box; font-family: 'Segoe UI', system-ui, sans-serif; }
-        body { margin: 0; padding: 0; background-color: #e2e8f0; color: var(--dark); }
-        
-        header { background: linear-gradient(135deg, var(--primary), #001233); color: white; padding: 15px 20px; text-align: center; border-bottom: 4px solid var(--secondary); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        h1, h2, h3 { margin-top: 0; }
-        h2 { border-bottom: 2px solid var(--secondary); padding-bottom: 8px; color: var(--primary); }
-        
-        .container { max-width: 1400px; margin: 20px auto; padding: 0 15px; display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
-        .full-width { grid-template-columns: 1fr; max-width: 1000px;}
-        @media (max-width: 1000px) { .container { grid-template-columns: 1fr; } }
+        :root {
+            --bg-color: #0f172a;
+            --panel-bg: #1e293b;
+            --primary: #3b82f6;
+            --primary-hover: #2563eb;
+            --accent: #f59e0b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --gold: #fbbf24;
+            --silver: #cbd5e1;
+            --bronze: #b45309;
+        }
 
-        .card { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         
-        input, select, button { padding: 10px 15px; font-size: 15px; border-radius: 6px; border: 1px solid #cbd5e1; margin: 8px 0; width: 100%; max-width: 350px; display: block; }
-        button { background-color: var(--primary); color: white; border: none; font-weight: bold; cursor: pointer; transition: 0.2s; max-width: 250px; }
-        button:hover { background-color: #001f4d; }
-        button:disabled { background-color: #94a3b8; cursor: not-allowed; }
-        .btn-success { background-color: var(--success); } .btn-success:hover { background-color: #15803d; }
-        .btn-danger { background-color: var(--danger); } .btn-danger:hover { background-color: #b91c1c; }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
 
-        /* Draft Table & UI */
-        .budget-panel { background: #1e293b; color: white; padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; font-size: 1.2rem; margin-bottom: 15px; border-left: 5px solid var(--success); }
-        table { width: 100%; border-collapse: collapse; font-size: 0.9rem; margin-top: 10px; }
-        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #e2e8f0; }
-        th { background-color: var(--primary); color: white; position: sticky; top: 0; }
-        tr:nth-child(even) { background-color: #f1f5f9; }
-        .drafted-row { background-color: #dcfce7 !important; border-left: 4px solid var(--success); }
-        .player-row { background-color: #fef9c3 !important; font-weight: bold; }
+        #game-container {
+            width: 100%;
+            max-width: 1000px;
+            background: var(--panel-bg);
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            overflow: hidden;
+            position: relative;
+            min-height: 700px;
+        }
+
+        .screen { display: none; padding: 30px; }
+        .screen.active { display: block; animation: fadeIn 0.4s ease-in; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        h1, h2, h3 { color: var(--text-main); margin-top: 0; }
+        .text-accent { color: var(--accent); }
+
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+        button:hover:not(:disabled) { background: var(--primary-hover); }
+        button:disabled { background: #475569; cursor: not-allowed; }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            background: #334155;
+            border: 1px solid #475569;
+            color: white;
+            border-radius: 6px;
+        }
+
+        /* Committee Screen */
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            background: #0f172a;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .athlete-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 15px;
+        }
+
+        .athlete-card {
+            background: #334155;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid var(--primary);
+        }
+
+        .athlete-card .cost { font-weight: bold; color: #10b981; }
         
-        .stat-bar { height: 8px; background: #cbd5e1; border-radius: 4px; width: 100px; margin-top: 4px; overflow: hidden; }
-        .stat-fill { height: 100%; background: var(--success); }
+        /* Hub Screen */
+        .hub-menu { display: flex; gap: 10px; margin-bottom: 20px; }
+        .timetable { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .event-row {
+            background: #334155;
+            padding: 12px;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-        /* Tiles */
-        .tile-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin: 20px 0; }
-        .tile { background: linear-gradient(135deg, var(--primary), #004094); color: white; font-size: 1.8rem; font-weight: bold; height: 100px; display: flex; align-items: center; justify-content: center; border-radius: 8px; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 6px rgba(0,0,0,0.1); user-select: none; }
-        .tile:hover { transform: translateY(-3px); border: 2px solid var(--secondary); }
-        .tile.revealed { background: #f1f5f9; color: var(--dark); border: 2px solid var(--secondary); pointer-events: none; transform: none; }
-
-        .medal { display: inline-block; width: 14px; height: 14px; border-radius: 50%; vertical-align: middle; }
-        .g { background-color: var(--gold); box-shadow: 0 0 4px gold; } .s { background-color: var(--silver); } .b { background-color: var(--bronze); }
-        .hidden { display: none !important; }
+        /* Minigame Screen */
+        .track {
+            background: #78350f;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
         
-        .host-banner { background: var(--secondary); color: var(--primary); font-size: 1.3rem; font-weight: bold; padding: 12px; border-radius: 8px; text-align: center; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px;}
+        .lane {
+            height: 30px;
+            background: rgba(255,255,255,0.1);
+            margin-bottom: 5px;
+            border-radius: 4px;
+            position: relative;
+            border-bottom: 1px solid rgba(255,255,255,0.3);
+        }
+
+        .runner {
+            height: 100%;
+            background: var(--text-muted);
+            width: 0%;
+            transition: width 0.3s ease;
+            position: absolute;
+            left: 0;
+            top: 0;
+            display: flex;
+            align-items: center;
+            padding-left: 5px;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+        .runner.player { background: var(--primary); color: white; font-weight: bold;}
+
+        .tile-container {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .speed-tile {
+            width: 80px;
+            height: 80px;
+            background: var(--accent);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            transition: transform 0.1s;
+        }
+        .speed-tile:hover { transform: scale(1.05); }
+
+        .tally-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        .tally-table th, .tally-table td { padding: 10px; text-align: left; border-bottom: 1px solid #334155; }
+        
+        .medal { display: inline-block; width: 15px; height: 15px; border-radius: 50%; margin-right: 5px;}
+        .m-gold { background: var(--gold); }
+        .m-silver { background: var(--silver); }
+        .m-bronze { background: var(--bronze); }
+
     </style>
 </head>
 <body>
 
-    <header>
-        <h1>🏆 Commonwealth Executive Simulator</h1>
-        <p>Scout Talent, Manage Budgets, and Compete Through History</p>
-    </header>
+<div id="game-container">
+    
+    <!-- Intro Screen -->
+    <div id="screen-intro" class="screen active">
+        <h1 style="text-align: center; margin-bottom: 40px; font-size: 2.5em;">Commonwealth Games <span class="text-accent">Simulator</span></h1>
+        
+        <label>Enter Your Name (Chairman)</label>
+        <input type="text" id="player-name" placeholder="e.g. Alexander">
 
-    <div id="screen-welcome" class="container full-width">
-        <div class="card" style="text-align: center; padding: 40px;">
-            <h2>📜 Presidential Appointment</h2>
-            <p>Assume control of your national Commonwealth Committee.</p>
-            <div style="text-align: left; max-width: 400px; margin: 20px auto;">
-                <label><strong>Your Name (Chairman):</strong></label>
-                <input type="text" id="player-name" placeholder="e.g., Sir Arthur Wellesley">
-                <label><strong>Select Nation:</strong></label>
-                <select id="player-country" onchange="updateCountryInfo()"></select>
-                <div id="country-info" style="margin-top: 15px; padding: 10px; background: #f1f5f9; border-radius: 6px;"></div>
+        <label>Select Your Nation to Represent</label>
+        <select id="country-select"></select>
+
+        <button onclick="startGame()" style="width: 100%; font-size: 1.2em; margin-top: 20px;">Initialize Committee</button>
+    </div>
+
+    <!-- Committee Drafting Screen -->
+    <div id="screen-committee" class="screen">
+        <h2>National Athletics Committee</h2>
+        <div class="dashboard-header">
+            <div>
+                <p style="margin:0;">Chairman: <strong id="c-name" class="text-accent"></strong></p>
+                <p style="margin:0;">Nation: <strong id="c-nation"></strong></p>
             </div>
-            <button onclick="startGame()" style="margin: 0 auto;">Take the Oath</button>
+            <div style="text-align: right;">
+                <p style="margin:0;">Budget: <strong id="c-budget" style="color: #10b981;"></strong></p>
+                <p style="margin:0;">Training Facilities: <strong id="c-facilities"></strong>/10</p>
+            </div>
+        </div>
+        
+        <h3>Draft Representatives</h3>
+        <p class="text-muted">High GDP and resources increase your budget. Higher facilities increase base tile speeds during events.</p>
+        <div class="athlete-grid" id="draft-grid"></div>
+        
+        <button onclick="goToHub()" style="margin-top: 30px; width: 100%;">Proceed to Games</button>
+    </div>
+
+    <!-- Main Hub Screen -->
+    <div id="screen-hub" class="screen">
+        <h2 id="hub-title" class="text-accent"></h2>
+        
+        <div class="hub-menu">
+            <button onclick="showTab('timetable')">Event Timetable</button>
+            <button onclick="showTab('medals-current')">Current Medal Tally</button>
+            <button onclick="showTab('medals-overall')">All-Time CWG Tally</button>
+        </div>
+
+        <div id="tab-timetable" class="hub-tab">
+            <h3>Select Event to Simulate</h3>
+            <div class="timetable" id="event-list"></div>
+        </div>
+
+        <div id="tab-medals-current" class="hub-tab" style="display:none;">
+            <h3>Current Games Medal Tally</h3>
+            <table class="tally-table">
+                <thead><tr><th>Nation</th><th>Gold</th><th>Silver</th><th>Bronze</th></tr></thead>
+                <tbody id="current-tally-body"></tbody>
+            </table>
+        </div>
+
+        <div id="tab-medals-overall" class="hub-tab" style="display:none;">
+            <h3>Overall Historical Tally (Since 2010)</h3>
+            <table class="tally-table">
+                <thead><tr><th>Nation</th><th>Gold</th><th>Silver</th><th>Bronze</th></tr></thead>
+                <tbody id="overall-tally-body"></tbody>
+            </table>
         </div>
     </div>
 
-    <div id="screen-draft" class="container full-width hidden">
-        <div class="card">
-            <div class="host-banner" id="draft-host-banner"></div>
-            <h2>📋 National Athletics Draft & Training Camp</h2>
-            <p id="chairman-title" style="color: #64748b; font-style: italic;"></p>
-            
-            <div class="budget-panel">
-                <span>Total Treasury Budget:</span>
-                <span id="budget-display" style="font-weight: bold; font-family: monospace; font-size: 1.5rem;">$0</span>
-            </div>
-            <p>Your GDP dictates your budget and training facility quality. Scout carefully! Better athletes cost more to train and send.</p>
-            
-            <div style="max-height: 500px; overflow-y: auto; border: 1px solid #cbd5e1; border-radius: 6px;">
-                <table id="draft-table">
-                    <thead>
-                        <tr>
-                            <th>Sport</th>
-                            <th>Athlete Name</th>
-                            <th>Age</th>
-                            <th>Strength & Chances</th>
-                            <th>Cost</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody id="draft-body"></tbody>
-                </table>
-            </div>
-            
-            <button class="btn-success" onclick="goToGames()" style="margin-top: 20px; width: 100%; max-width: 100%;">Finalize Roster & Enter Games</button>
+    <!-- Minigame Screen -->
+    <div id="screen-sport" class="screen">
+        <h2>100m Sprint Final</h2>
+        <p>Round: <span id="round-counter">1</span> / 10 | Pick a tile to determine your speed for this split.</p>
+        
+        <div class="track" id="race-lanes"></div>
+        
+        <div class="tile-container" id="game-tiles">
+            <!-- Tiles generated via JS -->
         </div>
     </div>
 
-    <div id="screen-games" class="container hidden">
-        <div>
-            <div class="host-banner" id="games-host-banner"></div>
-            
-            <div id="arena-card" class="card hidden" style="border: 3px solid var(--secondary);">
-                <h2 id="arena-title">🏟️ The Arena</h2>
-                <div style="display: flex; justify-content: space-between; background: #f1f5f9; padding: 10px; border-radius: 6px; font-weight: bold; margin-bottom: 15px;">
-                    <span id="chance-counter">Chance: 0 / 10</span>
-                    <span id="current-score">Accumulated: 0</span>
-                </div>
-                <div id="athlete-competing" style="text-align: center; font-size: 1.1rem; color: var(--primary); font-weight: bold;"></div>
-                
-                <div class="tile-grid" id="tile-container">
-                    <div class="tile" onclick="chooseTile(0)">?</div>
-                    <div class="tile" onclick="chooseTile(1)">?</div>
-                    <div class="tile" onclick="chooseTile(2)">?</div>
-                    <div class="tile" onclick="chooseTile(3)">?</div>
-                </div>
-
-                <div id="arena-results" class="hidden">
-                    <h3>🏁 Final Results</h3>
-                    <table>
-                        <thead><tr><th>Rk</th><th>Nation</th><th>Athlete</th><th>Score</th></tr></thead>
-                        <tbody id="results-body"></tbody>
-                    </table>
-                    <button onclick="closeArena()" style="margin-top:15px; width:100%; max-width:100%;">Return to Timetable</button>
-                </div>
-            </div>
-
-            <div class="card">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <h2>📅 Timetable</h2>
-                    <button onclick="simulateRemaining()" class="btn-danger" style="margin:0; max-width: 150px; font-size: 0.85rem;">Fast-Forward Era</button>
-                </div>
-                <div style="max-height: 500px; overflow-y: auto;">
-                    <table>
-                        <thead><tr><th>Sport</th><th>Category</th><th>Your Rep</th><th>Action</th></tr></thead>
-                        <tbody id="schedule-body"></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <div>
-            <div class="card">
-                <h2>📍 Current Edition Tally</h2>
-                <div style="max-height: 350px; overflow-y: auto;">
-                    <table>
-                        <thead><tr><th>Rk</th><th>Nation</th><th><span class="medal g"></span></th><th><span class="medal s"></span></th><th><span class="medal b"></span></th></tr></thead>
-                        <tbody id="current-tally-body"></tbody>
-                    </table>
-                </div>
-            </div>
-            <div class="card">
-                <h2>🌍 All-Time Tally</h2>
-                <div style="max-height: 350px; overflow-y: auto;">
-                    <table>
-                        <thead><tr><th>Rk</th><th>Nation</th><th><span class="medal g"></span></th><th><span class="medal s"></span></th><th><span class="medal b"></span></th></tr></thead>
-                        <tbody id="overall-tally-body"></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+    <!-- Post Event Screen -->
+    <div id="screen-results" class="screen">
+        <h2 class="text-accent">Event Results</h2>
+        <table class="tally-table">
+            <thead><tr><th>Rank</th><th>Athlete</th><th>Nation</th><th>Time/Dist</th></tr></thead>
+            <tbody id="results-body"></tbody>
+        </table>
+        <button onclick="finishEvent()" style="margin-top: 20px;">Return to Timetable</button>
     </div>
 
-    <script>
-        // --- DATA DICTIONARIES ---
-        const gameHosts = [
-            { year: 2010, city: "New Delhi, India" }, { year: 2014, city: "Glasgow, Scotland" },
-            { year: 2018, city: "Gold Coast, Australia" }, { year: 2022, city: "Birmingham, England" },
-            { year: 2026, city: "Victoria, Australia" }, { year: 2030, city: "Hamilton, Canada" }
-        ];
+</div>
 
-        // Name Pools for Cultural Realism
-        const names = {
-            "Anglo": { f: ["John","James","William","Liam","Oliver","Emma","Charlotte","Olivia","Amelia","Jack","Harry"], l: ["Smith","Jones","Taylor","Brown","Williams","Wilson","Johnson","Davies"] },
-            "Indian": { f: ["Amit","Rahul","Raj","Suresh","Vikram","Priya","Neha","Sneha","Ravi","Anjali"], l: ["Sharma","Singh","Patel","Kumar","Gupta","Reddy","Yadav","Das"] },
-            "African": { f: ["Samuel","Emmanuel","David","Blessing","Joy","Faith","Kofi","Kwame","Ngozi"], l: ["Okafor","Mensah","Kipchoge","Ndlovu","Adeyemi","Osei","Keita"] },
-            "Caribbean": { f: ["Usain","Yohan","Asafa","Shelly","Elaine","Kemar","Oblique","Shericka"], l: ["Bolt","Blake","Powell","Fraser","Thompson","Gordon","Clarke"] },
-            "SEAsian": { f: ["Lee","Nur","Ahmad","Siti","Muhammad","Kevin","Goh"], l: ["Chong","Tan","Lim","Abdullah","Wong","Rahman"] },
-            "Pacific": { f: ["Semi","Viliame","Josua","Leone","Timoci","Levani","Valerie"], l: ["Radradra","Nakarawa","Tuilagi","Adams","Vunivalu"] }
-        };
+<script>
+    // --- DATABASE ---
+    const regions = {
+        SouthAsia: { f: ['Neeraj', 'Avinash', 'Tejaswin', 'Saurav', 'Lakshya'], l: ['Chopra', 'Sable', 'Shankar', 'Ghosal', 'Sen'] },
+        Anglo: { f: ['Adam', 'Oliver', 'Matthew', 'Tom', 'Jake'], l: ['Peaty', 'Hoare', 'Smith', 'Dean', 'Wightman'] },
+        Caribbean: { f: ['Usain', 'Yohan', 'Kemar', 'Oblique', 'Ackeem'], l: ['Bolt', 'Blake', 'Bailey', 'Seville', 'Brown'] },
+        Africa: { f: ['Ferdinand', 'Akani', 'Julius', 'Kipruto', 'Emmanuel'], l: ['Omanyala', 'Simbine', 'Yego', 'Conseslus', 'Korir'] }
+    };
 
-        const nations = {
-            "Australia": { gdp: 5, pop: 3, reg: "Anglo" }, "England": { gdp: 5, pop: 4, reg: "Anglo" }, "Canada": { gdp: 5, pop: 3, reg: "Anglo" },
-            "India": { gdp: 4, pop: 5, reg: "Indian" }, "New Zealand": { gdp: 4, pop: 2, reg: "Anglo" }, "Jamaica": { gdp: 2, pop: 2, reg: "Caribbean" },
-            "Kenya": { gdp: 2, pop: 4, reg: "African" }, "South Africa": { gdp: 3, pop: 4, reg: "African" }, "Nigeria": { gdp: 3, pop: 5, reg: "African" },
-            "Malaysia": { gdp: 4, pop: 3, reg: "SEAsian" }, "Scotland": { gdp: 4, pop: 2, reg: "Anglo" }, "Wales": { gdp: 4, pop: 2, reg: "Anglo" },
-            "Singapore": { gdp: 5, pop: 2, reg: "SEAsian" }, "Pakistan": { gdp: 2, pop: 5, reg: "Indian" }, "Sri Lanka": { gdp: 2, pop: 3, reg: "Indian" },
-            "Fiji": { gdp: 2, pop: 1, reg: "Pacific" }, "Samoa": { gdp: 2, pop: 1, reg: "Pacific" }, "Uganda": { gdp: 1, pop: 3, reg: "African" },
-            "Trinidad & Tobago": { gdp: 3, pop: 2, reg: "Caribbean" }, "Bahamas": { gdp: 4, pop: 1, reg: "Caribbean" }, "Cyprus": { gdp: 4, pop: 2, reg: "Anglo" },
-            "Northern Ireland": { gdp: 4, pop: 2, reg: "Anglo" }, "Cameroon": { gdp: 2, pop: 3, reg: "African" }, "Botswana": { gdp: 3, pop: 2, reg: "African" },
-            "Malta": { gdp: 4, pop: 1, reg: "Anglo" }, "Mauritius": { gdp: 3, pop: 2, reg: "African" }, "Namibia": { gdp: 3, pop: 2, reg: "African" },
-            "Papua New Guinea": { gdp: 2, pop: 3, reg: "Pacific" }, "Barbados": { gdp: 3, pop: 1, reg: "Caribbean" }, "Guyana": { gdp: 3, pop: 2, reg: "Caribbean" },
-            "Grenada": { gdp: 2, pop: 1, reg: "Caribbean" }, "Bermuda": { gdp: 5, pop: 1, reg: "Anglo" }, "Saint Lucia": { gdp: 2, pop: 1, reg: "Caribbean" },
-            "Malawi": { gdp: 1, pop: 3, reg: "African" }, "Zambia": { gdp: 2, pop: 3, reg: "African" }, "Rwanda": { gdp: 2, pop: 3, reg: "African" },
-            "Tanzania": { gdp: 2, pop: 4, reg: "African" }, "Bangladesh": { gdp: 3, pop: 5, reg: "Indian" }, "Antigua": { gdp: 3, pop: 1, reg: "Caribbean" },
-            "Cayman Islands": { gdp: 5, pop: 1, reg: "Anglo" }, "Seychelles": { gdp: 4, pop: 1, reg: "African" }, "Gambia": { gdp: 1, pop: 2, reg: "African" },
-            "Sierra Leone": { gdp: 1, pop: 3, reg: "African" }, "Maldives": { gdp: 3, pop: 1, reg: "Indian" }, "Brunei": { gdp: 5, pop: 1, reg: "SEAsian" },
-            "Vanuatu": { gdp: 2, pop: 1, reg: "Pacific" }, "Tonga": { gdp: 2, pop: 1, reg: "Pacific" }, "Lesotho": { gdp: 1, pop: 2, reg: "African" },
-            "Dominica": { gdp: 2, pop: 1, reg: "Caribbean" }, "Belize": { gdp: 2, pop: 1, reg: "Caribbean" }
-        };
+    const nations = {
+        IND: { id: 'IND', name: "India", region: "SouthAsia", gdp: 8, pop: 10, resources: 7 },
+        AUS: { id: 'AUS', name: "Australia", region: "Anglo", gdp: 9, pop: 4, resources: 8 },
+        ENG: { id: 'ENG', name: "England", region: "Anglo", gdp: 9, pop: 6, resources: 7 },
+        CAN: { id: 'CAN', name: "Canada", region: "Anglo", gdp: 9, pop: 5, resources: 9 },
+        JAM: { id: 'JAM', name: "Jamaica", region: "Caribbean", gdp: 4, pop: 2, resources: 4 },
+        KEN: { id: 'KEN', name: "Kenya", region: "Africa", gdp: 3, pop: 5, resources: 5 },
+        RSA: { id: 'RSA', name: "South Africa", region: "Africa", gdp: 6, pop: 6, resources: 8 },
+        NZL: { id: 'NZL', name: "New Zealand", region: "Anglo", gdp: 8, pop: 3, resources: 7 },
+        NGR: { id: 'NGR', name: "Nigeria", region: "Africa", gdp: 5, pop: 8, resources: 6 },
+        SCO: { id: 'SCO', name: "Scotland", region: "Anglo", gdp: 8, pop: 4, resources: 6 }
+        // Expandable up to 50 nations with the same structure
+    };
 
-        const sportsList = [
-            { id: 0, name: "Athletics", cat: "100m Sprint", type: "timed", min: 9.6, max: 11.5 },
-            { id: 1, name: "Athletics", cat: "400m Race", type: "timed", min: 43.5, max: 50.0 },
-            { id: 2, name: "Athletics", cat: "Long Jump", type: "dist", min: 7.0, max: 8.6 },
-            { id: 3, name: "Swimming", cat: "50m Free", type: "timed", min: 21.0, max: 24.5 },
-            { id: 4, name: "Swimming", cat: "100m Fly", type: "timed", min: 50.0, max: 56.0 },
-            { id: 5, name: "Weightlifting", cat: "85kg Snatch", type: "dist", min: 140, max: 180 },
-            { id: 6, name: "Weightlifting", cat: "69kg C&J", type: "dist", min: 110, max: 150 },
-            { id: 7, name: "Cycling", cat: "Track Sprint", type: "timed", min: 9.5, max: 11.2 },
-            { id: 8, name: "Cycling", cat: "Time Trial", type: "timed", min: 58.0, max: 66.0 },
-            { id: 9, name: "Gymnastics", cat: "Vault", type: "dist", min: 13.0, max: 16.0 },
-            { id: 10, name: "Gymnastics", cat: "Floor", type: "dist", min: 12.0, max: 15.5 },
-            { id: 11, name: "Shooting", cat: "10m Rifle", type: "dist", min: 240, max: 255 },
-            { id: 12, name: "Shooting", cat: "Skeet", type: "dist", min: 110, max: 125 },
-            { id: 13, name: "Archery", cat: "Recurve", type: "dist", min: 650, max: 700 },
-            { id: 14, name: "Rowing", cat: "Single Sculls", type: "timed", min: 390, max: 440 },
-            { id: 15, name: "Triathlon", cat: "Individual", type: "timed", min: 5400, max: 6200 },
-            { id: 16, name: "Judo", cat: "Heavyweight", type: "dist", min: 10, max: 100 },
-            { id: 17, name: "Wrestling", cat: "Freestyle", type: "dist", min: 5, max: 40 },
-            { id: 18, name: "Boxing", cat: "Lightweight", type: "dist", min: 20, max: 80 },
-            { id: 19, name: "Diving", cat: "10m Platform", type: "dist", min: 400, max: 550 },
-            { id: 20, name: "Badminton", cat: "Singles", type: "dist", min: 40, max: 100 },
-            { id: 21, name: "Table Tennis", cat: "Singles", type: "dist", min: 35, max: 85 },
-            { id: 22, name: "Squash", cat: "Singles", type: "dist", min: 30, max: 90 },
-            { id: 23, name: "Lawn Bowls", cat: "Singles", type: "dist", min: 10, max: 21 },
-            { id: 24, name: "Canoe", cat: "K-1 Sprint", type: "timed", min: 34.0, max: 40.0 }
-        ];
+    const hosts = [
+        { year: 2010, city: 'Delhi', country: 'India' },
+        { year: 2014, city: 'Glasgow', country: 'Scotland' },
+        { year: 2018, city: 'Gold Coast', country: 'Australia' },
+        { year: 2022, city: 'Birmingham', country: 'England' },
+        { year: 2026, city: 'Glasgow', country: 'Scotland' },
+        { year: 2030, city: 'Ahmedabad', country: 'India' }
+    ];
 
-        // --- GLOBAL VARIABLES ---
-        let pName = "", pCountry = "";
-        let hostIndex = 0;
-        let budget = 0, currentBudget = 0;
-        let draftPool = [], playerRoster = {};
-        let currentMedals = {}, overallMedals = {};
-        let sportsStatus = [];
-        let activeSport = null, activeChance = 0, activeScores = [], tileVals = [];
+    const sports = [
+        { id: '100m_m', name: '100m Sprint (Men)', type: 'race' },
+        { id: '100m_w', name: '100m Sprint (Women)', type: 'race' },
+        { id: 'longjump_m', name: 'Long Jump (Men)', type: 'field' },
+        { id: 'javelin_m', name: 'Javelin Throw (Men)', type: 'field' }
+        // Scalable to 30 sports following this model
+    ];
 
-        // --- MOBILE-SAFE INITIALIZATION ---
-        function initApp() {
-            const select = document.getElementById("player-country");
-            select.innerHTML = ""; // Clear fallback
-            
-            // Populate Nations
-            Object.keys(nations).sort().forEach(c => {
-                let opt = document.createElement("option");
-                opt.value = c;
-                opt.textContent = c;
-                select.appendChild(opt);
-            });
-            
-            // Initialize Medal Tracker
-            Object.keys(nations).forEach(c => { overallMedals[c] = {g:0, s:0, b:0}; });
-            
-            // Force First UI Update
-            updateCountryInfo();
+    // --- GAME STATE ---
+    let state = {
+        playerName: '',
+        playerNationId: '',
+        budget: 0,
+        facilities: 0,
+        roster: [],
+        currentHostIndex: 0,
+        completedEvents: [],
+        overallMedals: {},
+        currentMedals: {},
+        activeEvent: null,
+        raceLogic: { round: 1, maxRounds: 10, lanes: [] }
+    };
+
+    // --- UTILS ---
+    const getEl = id => document.getElementById(id);
+    const switchScreen = id => {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        getEl(id).classList.add('active');
+    };
+    const showTab = id => {
+        document.querySelectorAll('.hub-tab').forEach(t => t.style.display = 'none');
+        getEl('tab-' + id).style.display = 'block';
+    };
+    
+    function generateName(regionId) {
+        const pool = regions[regionId];
+        const f = pool.f[Math.floor(Math.random() * pool.f.length)];
+        const l = pool.l[Math.floor(Math.random() * pool.l.length)];
+        return f + ' ' + l;
+    }
+
+    // --- INITIALIZATION ---
+    window.onload = () => {
+        const select = getEl('country-select');
+        Object.values(nations).forEach(n => {
+            const opt = document.createElement('option');
+            opt.value = n.id;
+            opt.textContent = n.name;
+            select.appendChild(opt);
+        });
+        
+        // Init medal structures
+        Object.keys(nations).forEach(key => {
+            state.overallMedals[key] = { g: 0, s: 0, b: 0 };
+        });
+    };
+
+    function startGame() {
+        state.playerName = getEl('player-name').value || 'Chairman';
+        state.playerNationId = getEl('country-select').value;
+        const nat = nations[state.playerNationId];
+        
+        state.budget = nat.gdp * nat.resources * 15000;
+        state.facilities = Math.ceil((nat.gdp + nat.resources) / 2); // Out of 10
+        
+        getEl('c-name').textContent = state.playerName;
+        getEl('c-nation').textContent = nat.name;
+        updateBudgetUI();
+        getEl('c-facilities').textContent = state.facilities;
+
+        generateDraft();
+        switchScreen('screen-committee');
+    }
+
+    function updateBudgetUI() {
+        getEl('c-budget').textContent = '$' + state.budget.toLocaleString();
+    }
+
+    function generateDraft() {
+        const grid = getEl('draft-grid');
+        grid.innerHTML = '';
+        const nat = nations[state.playerNationId];
+
+        for(let i=0; i<6; i++) {
+            const str = Math.floor(Math.random() * 5) + 5; // 5 to 9 strength
+            const age = Math.floor(Math.random() * 12) + 18; // 18 to 29
+            const cost = str * 18000;
+            const name = generateName(nat.region);
+
+            const div = document.createElement('div');
+            div.className = 'athlete-card';
+            div.innerHTML = `
+                <h4>${name}</h4>
+                <p>Age: ${age} | Strength: ${str}/10</p>
+                <p class="cost">Cost: $${cost.toLocaleString()}</p>
+                <button onclick="draftAthlete(this, '${name}', ${str}, ${cost})" id="btn-${i}">Draft Representative</button>
+            `;
+            grid.appendChild(div);
         }
+    }
 
-        function updateCountryInfo() {
-            const select = document.getElementById("player-country");
-            if (!select || !select.value) return; // Safety check
-            
-            let c = select.value;
-            let n = nations[c];
-            if (!n) return;
-
-            document.getElementById("country-info").innerHTML = `<b>Economic Power (GDP):</b> ${"⭐".repeat(n.gdp)}/5<br><b>Demographics:</b> Tier ${n.pop}/5`;
-        }
-
-        function genName(country) {
-            let reg = nations[country].reg;
-            let f = names[reg].f[Math.floor(Math.random() * names[reg].f.length)];
-            let l = names[reg].l[Math.floor(Math.random() * names[reg].l.length)];
-            return `${f} ${l}`;
-        }
-
-        // --- PHASE 1: DRAFTING ---
-        function startGame() {
-            pName = document.getElementById("player-name").value || "Executive";
-            pCountry = document.getElementById("player-country").value;
-            document.getElementById("screen-welcome").classList.add("hidden");
-            setupEra();
-        }
-
-        function setupEra() {
-            document.getElementById("screen-draft").classList.remove("hidden");
-            document.getElementById("screen-games").classList.add("hidden");
-            
-            let host = gameHosts[hostIndex % gameHosts.length];
-            let year = host.year + Math.floor(hostIndex / gameHosts.length) * 24;
-            document.getElementById("draft-host-banner").innerText = `Pre-Games Draft: ${year} ${host.city}`;
-            document.getElementById("chairman-title").innerText = `Chairman ${pName} - ${pCountry} Committee`;
-
-            // Reset Edition State
-            Object.keys(nations).forEach(c => { currentMedals[c] = {g:0, s:0, b:0}; });
-            sportsStatus = sportsList.map(s => ({...s, done: false}));
-            playerRoster = {};
-            
-            budget = (nations[pCountry].gdp * 450000) + (nations[pCountry].pop * 50000);
-            currentBudget = budget;
+    window.draftAthlete = function(btnEl, name, str, cost) {
+        if (state.budget >= cost) {
+            state.budget -= cost;
+            state.roster.push({ name, str, nationId: state.playerNationId });
             updateBudgetUI();
-
-            generateDraftPool();
+            btnEl.textContent = "Drafted";
+            btnEl.disabled = true;
+            btnEl.style.background = "#10b981";
+        } else {
+            alert("Insufficient Committee Funds!");
         }
+    }
 
-        function updateBudgetUI() {
-            document.getElementById("budget-display").innerText = `$${currentBudget.toLocaleString()}`;
+    // --- HUB & TIMETABLE ---
+    function goToHub() {
+        if(state.roster.length === 0) {
+            alert("Please draft at least one athlete to represent your nation.");
+            return;
         }
+        
+        Object.keys(nations).forEach(key => {
+            state.currentMedals[key] = { g: 0, s: 0, b: 0 };
+        });
 
-        function generateDraftPool() {
-            draftPool = [];
-            let tbody = document.getElementById("draft-body");
-            tbody.innerHTML = "";
+        const host = hosts[state.currentHostIndex];
+        getEl('hub-title').textContent = `${host.year} Commonwealth Games - ${host.city}, ${host.country}`;
+        
+        renderTimetable();
+        updateTallyUI();
+        switchScreen('screen-hub');
+    }
 
-            sportsList.forEach(sport => {
-                let baseStr = 40 + (nations[pCountry].gdp * 8);
-                let str = Math.min(99, Math.floor(baseStr + (Math.random() * 30 - 10)));
-                let cost = Math.floor(Math.pow(Math.max(1, str - 30), 2) * 90); 
-                
-                let athlete = { id: sport.id, name: genName(pCountry), age: 18 + Math.floor(Math.random()*18), str: str, cost: cost, sportId: sport.id };
-                draftPool.push(athlete);
+    function renderTimetable() {
+        const list = getEl('event-list');
+        list.innerHTML = '';
+        sports.forEach(sp => {
+            const isDone = state.completedEvents.includes(sp.id);
+            const div = document.createElement('div');
+            div.className = 'event-row';
+            div.innerHTML = `
+                <span>${sp.name}</span>
+                <button ${isDone ? 'disabled' : ''} onclick="startEvent('${sp.id}')">
+                    ${isDone ? 'Completed' : 'Participate'}
+                </button>
+            `;
+            list.appendChild(div);
+        });
+    }
 
-                let tr = document.createElement("tr");
-                tr.id = `draft-row-${sport.id}`;
-                tr.innerHTML = `
-                    <td><strong>${sport.name}</strong><br><small>${sport.cat}</small></td>
-                    <td>${athlete.name}</td>
-                    <td>${athlete.age}</td>
-                    <td>
-                        <div class="stat-bar"><div class="stat-fill" style="width:${str}%"></div></div>
-                        <small>Rating: ${str}/100</small>
-                    </td>
-                    <td>$${cost.toLocaleString()}</td>
-                    <td><button id="btn-draft-${sport.id}" onclick="toggleDraft(${sport.id})" style="padding: 6px; font-size: 0.85rem;">Draft</button></td>
-                `;
-                tbody.appendChild(tr);
+    // --- CORE MINIGAME LOGIC ---
+    window.startEvent = function(eventId) {
+        state.activeEvent = eventId;
+        state.raceLogic.round = 1;
+        state.raceLogic.lanes = [];
+
+        // Setup AI opponents
+        const opponentIds = Object.keys(nations).filter(k => k !== state.playerNationId).sort(() => 0.5 - Math.random()).slice(0, 9);
+        
+        opponentIds.forEach((nId, idx) => {
+            const nat = nations[nId];
+            const fac = Math.ceil((nat.gdp + nat.resources)/2);
+            const str = Math.floor(Math.random() * 4) + 6; // AI strength 6-9
+            state.raceLogic.lanes.push({
+                laneNum: idx + 1,
+                name: generateName(nat.region),
+                nationId: nId,
+                str: str,
+                facilities: fac,
+                dist: 0,
+                isPlayer: false
             });
+        });
+
+        // Insert Player (using best roster athlete)
+        const playerAthlete = state.roster.sort((a,b) => b.str - a.str)[0];
+        state.raceLogic.lanes.splice(4, 0, {
+            laneNum: 5,
+            name: playerAthlete.name,
+            nationId: state.playerNationId,
+            str: playerAthlete.str,
+            facilities: state.facilities,
+            dist: 0,
+            isPlayer: true
+        });
+
+        renderRaceUI();
+        generateTiles();
+        switchScreen('screen-sport');
+    };
+
+    function renderRaceUI() {
+        getEl('round-counter').textContent = state.raceLogic.round;
+        const track = getEl('race-lanes');
+        track.innerHTML = '';
+
+        state.raceLogic.lanes.forEach(l => {
+            const div = document.createElement('div');
+            div.className = 'lane';
+            div.innerHTML = `
+                <div class="runner ${l.isPlayer ? 'player' : ''}" id="runner-${l.laneNum}" style="width: ${l.dist}%">
+                    ${l.nationId} - ${l.name}
+                </div>
+            `;
+            track.appendChild(div);
+        });
+    }
+
+    function generateTiles() {
+        const container = getEl('game-tiles');
+        container.innerHTML = '';
+        const playerLane = state.raceLogic.lanes.find(l => l.isPlayer);
+        
+        // Base average calculation utilizing game mechanics (GDP -> Facilities -> Tile Values)
+        const baseSpeed = (playerLane.str * 0.7) + (playerLane.facilities * 0.3);
+
+        for(let i=0; i<4; i++) {
+            // Random fluctuation based on standard deviation
+            const variance = (Math.random() * 3) - 1.5; 
+            let speedVal = (baseSpeed + variance).toFixed(1);
+            if(speedVal > 11.5) speedVal = 11.5; // Max theoretical speed limit 11.5 m/s
+
+            const tile = document.createElement('div');
+            tile.className = 'speed-tile';
+            tile.textContent = '?';
+            tile.onclick = () => selectTile(speedVal);
+            container.appendChild(tile);
         }
+    }
 
-        function toggleDraft(id) {
-            let athlete = draftPool.find(a => a.id === id);
-            let btn = document.getElementById(`btn-draft-${id}`);
-            let row = document.getElementById(`draft-row-${id}`);
+    window.selectTile = function(selectedSpeed) {
+        const lns = state.raceLogic.lanes;
+        selectedSpeed = parseFloat(selectedSpeed);
 
-            if (playerRoster[id]) {
-                delete playerRoster[id];
-                currentBudget += athlete.cost;
-                btn.innerText = "Draft";
-                btn.classList.remove("btn-danger");
-                row.classList.remove("drafted-row");
+        lns.forEach(l => {
+            if(l.isPlayer) {
+                l.dist += selectedSpeed; // Distance mapping to % visually
             } else {
-                if (currentBudget >= athlete.cost) {
-                    playerRoster[id] = athlete;
-                    currentBudget -= athlete.cost;
-                    btn.innerText = "Revoke";
-                    btn.classList.add("btn-danger");
-                    row.classList.add("drafted-row");
-                } else {
-                    alert("Insufficient Treasury Budget!");
-                }
+                // AI Simulation
+                const aiBase = (l.str * 0.7) + (l.facilities * 0.3);
+                const aiSpeed = aiBase + ((Math.random() * 2) - 1);
+                l.dist += parseFloat(aiSpeed.toFixed(1));
             }
-            updateBudgetUI();
-        }
+            // Update visual widths
+            const visualDist = l.dist > 100 ? 100 : l.dist;
+            getEl(`runner-${l.laneNum}`).style.width = visualDist + '%';
+        });
 
-        // --- PHASE 2: THE GAMES ---
-        function goToGames() {
-            document.getElementById("screen-draft").classList.add("hidden");
-            document.getElementById("screen-games").classList.remove("hidden");
+        state.raceLogic.round++;
+        
+        if(state.raceLogic.round <= 10) {
+            getEl('round-counter').textContent = state.raceLogic.round;
+            generateTiles();
+        } else {
+            getEl('game-tiles').innerHTML = '';
+            setTimeout(showResults, 1000);
+        }
+    }
+
+    function showResults() {
+        // Sort by highest distance covered in 10 seconds
+        const results = [...state.raceLogic.lanes].sort((a,b) => b.dist - a.dist);
+        
+        const body = getEl('results-body');
+        body.innerHTML = '';
+        
+        results.forEach((r, idx) => {
+            // Award medals
+            if(idx === 0) { state.currentMedals[r.nationId].g++; state.overallMedals[r.nationId].g++; }
+            if(idx === 1) { state.currentMedals[r.nationId].s++; state.overallMedals[r.nationId].s++; }
+            if(idx === 2) { state.currentMedals[r.nationId].b++; state.overallMedals[r.nationId].b++; }
+
+            const tr = document.createElement('tr');
+            if(r.isPlayer) tr.style.background = 'rgba(59, 130, 246, 0.2)';
             
-            let host = gameHosts[hostIndex % gameHosts.length];
-            let year = host.year + Math.floor(hostIndex / gameHosts.length) * 24;
-            document.getElementById("games-host-banner").innerText = `Live Edition: ${year} ${host.city}`;
+            let rankStr = (idx + 1);
+            if(idx === 0) rankStr = '<span class="medal m-gold"></span> 1st';
+            if(idx === 1) rankStr = '<span class="medal m-silver"></span> 2nd';
+            if(idx === 2) rankStr = '<span class="medal m-bronze"></span> 3rd';
 
-            renderTimetable();
-            renderTallies();
+            tr.innerHTML = `
+                <td>${rankStr}</td>
+                <td>${r.name}</td>
+                <td>${r.nationId}</td>
+                <td>${r.dist.toFixed(1)} m</td>
+            `;
+            body.appendChild(tr);
+        });
+
+        state.completedEvents.push(state.activeEvent);
+        switchScreen('screen-results');
+    }
+
+    window.finishEvent = function() {
+        if(state.completedEvents.length >= sports.length) {
+            // Season over logic
+            alert(`The ${hosts[state.currentHostIndex].year} Games have concluded! Moving to the next host city.`);
+            state.completedEvents = [];
+            state.currentHostIndex = (state.currentHostIndex + 1) % hosts.length;
+            goToHub(); // Re-init next season
+        } else {
+            goToHub();
         }
+    }
 
-        function renderTimetable() {
-            let tbody = document.getElementById("schedule-body");
-            tbody.innerHTML = "";
-            sportsStatus.forEach(s => {
-                let rep = playerRoster[s.id] ? playerRoster[s.id].name : "<span style='color:red'>No Athlete</span>";
-                let btn = s.done ? `<button disabled>Logged</button>` 
-                                 : (playerRoster[s.id] ? `<button class="btn-success" onclick="playArena(${s.id})">Compete</button>` 
-                                                       : `<button disabled>Skipped</button>`);
-                
-                let tr = document.createElement("tr");
-                tr.innerHTML = `<td><strong>${s.name}</strong></td><td>${s.cat}</td><td>${rep}</td><td>${btn}</td>`;
-                tbody.appendChild(tr);
-            });
-        }
-
-        // --- PHASE 3: GAMEPLAY ARENA ---
-        function playArena(id) {
-            activeSport = sportsStatus.find(s => s.id === id);
-            activeChance = 0; activeScores = [];
+    function updateTallyUI() {
+        const renderTally = (dataObj, elementId) => {
+            const body = getEl(elementId);
+            body.innerHTML = '';
             
-            document.getElementById("arena-card").classList.remove("hidden");
-            document.getElementById("arena-results").classList.add("hidden");
-            document.getElementById("tile-container").classList.remove("hidden");
-            document.getElementById("arena-title").innerText = `Arena: ${activeSport.name} - ${activeSport.cat}`;
-            document.getElementById("athlete-competing").innerText = `Representing you: ${playerRoster[id].name} (Str: ${playerRoster[id].str})`;
-            
-            document.getElementById("arena-card").scrollIntoView({behavior: "smooth"});
-            nextChance();
-        }
-
-        function nextChance() {
-            activeChance++;
-            document.getElementById("chance-counter").innerText = `Chance: ${activeChance} / 10`;
-            let total = activeScores.reduce((a,b)=>a+b,0);
-            let unit = activeSport.type === "timed" ? "s" : "m/kg";
-            document.getElementById("current-score").innerText = `Score: ${total.toFixed(2)} ${unit}`;
-
-            let athStr = playerRoster[activeSport.id].str;
-            let buff = (athStr / 100);
-
-            tileVals = [];
-            for (let i = 0; i < 4; i++) {
-                let base = (activeSport.min + Math.random()*(activeSport.max - activeSport.min))/10;
-                let val = activeSport.type === "timed" ? base * (1.2 - (buff*0.4)) : base * (0.8 + (buff*0.5));
-                tileVals.push(val);
-            }
-
-            document.querySelectorAll(".tile").forEach(t => { t.innerText = "?"; t.classList.remove("revealed"); });
-        }
-
-        function chooseTile(idx) {
-            activeScores.push(tileVals[idx]);
-            let unit = activeSport.type === "timed" ? "s" : "u";
-            document.querySelectorAll(".tile").forEach((t, i) => {
-                t.innerText = `${tileVals[i].toFixed(2)}${unit}`;
-                t.classList.add("revealed");
+            const sortedKeys = Object.keys(dataObj).sort((a, b) => {
+                const aTot = dataObj[a].g * 3 + dataObj[a].s * 2 + dataObj[a].b;
+                const bTot = dataObj[b].g * 3 + dataObj[b].s * 2 + dataObj[b].b;
+                return bTot - aTot; // Weighted sorting
             });
 
-            setTimeout(() => {
-                if(activeChance < 10) nextChance();
-                else resolveEvent(activeScores.reduce((a,b)=>a+b,0), true);
-            }, 800);
-        }
-
-        // --- AI SIMULATION & RESULTS ---
-        function resolveEvent(playerScore, showUI) {
-            let board = [];
-            if (playerRoster[activeSport.id]) {
-                board.push({ nat: pCountry, ath: playerRoster[activeSport.id].name, score: playerScore, isP: true });
-            }
-
-            let aiPool = Object.keys(nations).filter(n => n !== pCountry).sort(()=>0.5 - Math.random()).slice(0, 9);
-            aiPool.forEach(aiNat => {
-                let aiStr = 40 + (nations[aiNat].gdp * 8) + (Math.random()*20 - 10);
-                let buff = (Math.min(99, aiStr) / 100);
-                let aiScore = 0;
-                for(let i=0; i<10; i++) {
-                    let base = (activeSport.min + Math.random()*(activeSport.max - activeSport.min))/10;
-                    aiScore += activeSport.type === "timed" ? base * (1.2 - (buff*0.4)) : base * (0.8 + (buff*0.5));
-                }
-                board.push({ nat: aiNat, ath: genName(aiNat), score: aiScore, isP: false });
+            sortedKeys.forEach(k => {
+                const tr = document.createElement('tr');
+                if(k === state.playerNationId) tr.style.fontWeight = 'bold';
+                tr.innerHTML = `
+                    <td>${nations[k].name}</td>
+                    <td>${dataObj[k].g}</td>
+                    <td>${dataObj[k].s}</td>
+                    <td>${dataObj[k].b}</td>
+                `;
+                body.appendChild(tr);
             });
+        };
 
-            board.sort((a,b) => activeSport.type === "timed" ? a.score - b.score : b.score - a.score);
+        renderTally(state.currentMedals, 'current-tally-body');
+        renderTally(state.overallMedals, 'overall-tally-body');
+    }
 
-            currentMedals[board.nat].g++; overallMedals[board.nat].g++;
-            currentMedals[board.nat].s++; overallMedals[board.nat].s++;
-            currentMedals[board.nat].b++; overallMedals[board.nat].b++;
-
-            activeSport.done = true;
-
-            if (showUI) {
-                document.getElementById("tile-container").classList.add("hidden");
-                let resBody = document.getElementById("results-body");
-                resBody.innerHTML = "";
-                let unit = activeSport.type === "timed" ? "sec" : "pts";
-                board.forEach((r, i) => {
-                    let icon = i===0?'<span class="medal g"></span>':i===1?'<span class="medal s"></span>':i===2?'<span class="medal b"></span>':'';
-                    let tr = document.createElement("tr");
-                    if(r.isP) tr.classList.add("player-row");
-                    tr.innerHTML = `<td>${i+1} ${icon}</td><td>${r.nat}</td><td>${r.ath}</td><td>${r.score.toFixed(2)} ${unit}</td>`;
-                    resBody.appendChild(tr);
-                });
-                document.getElementById("arena-results").classList.remove("hidden");
-                renderTimetable();
-                renderTallies();
-            }
-        }
-
-        function closeArena() {
-            document.getElementById("arena-card").classList.add("hidden");
-            window.scrollTo({top:0, behavior:"smooth"});
-        }
-
-        function simulateRemaining() {
-            if(confirm("Simulate all unfinished events and move to the next host city cycle?")) {
-                sportsStatus.forEach(s => {
-                    if(!s.done) {
-                        activeSport = s;
-                        let pScore = null;
-                        if(playerRoster[s.id]) {
-                            let str = playerRoster[s.id].str;
-                            let buff = str/100;
-                            pScore = 0;
-                            for(let i=0; i<10; i++){
-                                let base = (s.min + Math.random()*(s.max-s.min))/10;
-                                pScore += s.type==="timed" ? base*(1.2-(buff*0.4)) : base*(0.8+(buff*0.5));
-                            }
-                        }
-                        resolveEvent(pScore, false);
-                    }
-                });
-                renderTallies();
-                setTimeout(() => {
-                    alert("Games Concluded! Check final tallies. Moving to next era.");
-                    hostIndex++;
-                    setupEra();
-                }, 500);
-            }
-        }
-
-        function renderTallies() {
-            const updateT = (data, id) => {
-                let tbody = document.getElementById(id);
-                tbody.innerHTML = "";
-                let sorted = Object.keys(data).map(n => ({ n, ...data[n] })).sort((a,b) => b.g - a.g || b.s - a.s || b.b - a.b);
-                sorted.forEach((r, i) => {
-                    if(r.g===0 && r.s===0 && r.b===0) return;
-                    let tr = document.createElement("tr");
-                    if(r.n === pCountry) tr.classList.add("player-row");
-                    tr.innerHTML = `<td>${i+1}</td><td>${r.n}</td><td>${r.g}</td><td>${r.s}</td><td>${r.b}</td>`;
-                    tbody.appendChild(tr);
-                });
-            };
-            updateT(currentMedals, "current-tally-body");
-            updateT(overallMedals, "overall-tally-body");
-        }
-
-        // Fire the initialization immediately instead of waiting for window.onload
-        initApp();
-    </script>
+</script>
 </body>
 </html>
-                 
+                
