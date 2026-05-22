@@ -1,1 +1,498 @@
 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Commonwealth Games Simulator</title>
+    <style>
+        :root {
+            --primary: #002f6c;
+            --secondary: #ffcd00;
+            --dark: #222;
+            --light: #f4f4f9;
+            --gold: #ffd700;
+            --silver: #c0c0c0;
+            --bronze: #cd7f32;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: var(--light);
+            color: var(--dark);
+        }
+
+        header {
+            background-color: var(--primary);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 5px solid var(--secondary);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .container { grid-template-columns: 1fr; }
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 5px;
+            color: var(--primary);
+        }
+
+        /* Nation Selection */
+        .setup-screen {
+            text-align: center;
+            padding: 5px;
+        }
+
+        select, button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            margin: 10px;
+        }
+
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background-color: #001f4d;
+        }
+
+        /* Tile Game UI */
+        .tile-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .tile {
+            background-color: var(--primary);
+            color: white;
+            font-size: 2rem;
+            font-weight: bold;
+            height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+            user-select: none;
+        }
+
+        .tile:hover {
+            transform: scale(1.05);
+            background-color: #004094;
+        }
+
+        .tile.revealed {
+            background-color: var(--secondary);
+            color: var(--dark);
+            pointer-events: none;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        tr:nth-child(even) { background-color: #f9f9f9; }
+
+        .medal { display: inline-block; width: 15px; height: 15px; border-radius: 50%; margin-right: 5px; }
+        .g { background-color: var(--gold); }
+        .s { background-color: var(--silver); }
+        .b { background-color: var(--bronze); }
+
+        .hidden { display: none; }
+        .status-bar { display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 10px;}
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🏆 Commonwealth Games Simulator</h1>
+        <p>Choose your country, compete across sports, and top the medal tally!</p>
+    </header>
+
+    <!-- Setup Screen -->
+    <div id="setup-screen" class="container style="grid-template-columns: 1fr;"">
+        <div class="card setup-screen">
+            <h2>Select Your Nation</h2>
+            <select id="nation-select"></select>
+            <br>
+            <button onclick="startGame()">Enter the Games</button>
+        </div>
+    </div>
+
+    <!-- Main Game Screen -->
+    <div id="game-screen" class="container hidden">
+        <!-- Left Column: Competitions & Arena -->
+        <div>
+            <!-- Active Arena -->
+            <div id="arena-card" class="card hidden">
+                <h2 id="arena-title">Event Arena</h2>
+                <div class="status-bar">
+                    <span id="chance-counter">Chance: 0 / 10</span>
+                    <span id="current-score">Your Score: 0</span>
+                </div>
+                <p id="game-instruction">Click a mystery tile to lock in your performance for this round!</p>
+                <div class="tile-grid" id="tile-container">
+                    <div class="tile" onclick="chooseTile(0)">?</div>
+                    <div class="tile" onclick="chooseTile(1)">?</div>
+                    <div class="tile" onclick="chooseTile(2)">?</div>
+                    <div class="tile" onclick="chooseTile(3)">?</div>
+                </div>
+                <div id="arena-results" class="hidden">
+                    <h3>Race Results</h3>
+                    <table id="results-table">
+                        <thead><tr><th>Rank</th><th>Nation</th><th>Performance</th></tr></thead>
+                        <tbody id="results-body"></tbody>
+                    </table>
+                    <button onclick="closeArena()" style="margin-top:15px;">Return to Schedule</button>
+                </div>
+            </div>
+
+            <!-- Schedule / Time Table -->
+            <div class="card">
+                <h2>📅 Event Schedule / Time Table</h2>
+                <table id="schedule-table">
+                    <thead>
+                        <tr>
+                            <th>Sport</th>
+                            <th>Category</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="schedule-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Right Column: Medal Tally -->
+        <div>
+            <div class="card">
+                <h2>🥇 Medal Tally</h2>
+                <table id="tally-table">
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Nation</th>
+                            <th><span class="medal g"></span></th>
+                            <th><span class="medal s"></span></th>
+                            <th><span class="medal b"></span></th>
+                        </tr>
+                    </thead>
+                    <tbody id="tally-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- DATA STRUCTURES ---
+        const countries = [
+            "Australia", "England", "Canada", "India", "New Zealand", "Jamaica", "Kenya", "South Africa", "Nigeria", "Malaysia",
+            "Scotland", "Wales", "Northern Ireland", "Cyprus", "Singapore", "Pakistan", "Ghana", "Sri Lanka", "Cameroon", "Fiji",
+            "Samoa", "Bahamas", "Uganda", "Trinidad and Tobago", "Botswana", "Guyana", "Malta", "Mauritius", "Namibia", "Papua New Guinea",
+            "Barbados", "Grenada", "Bermuda", "Dominica", "Saint Lucia", "Antigua and Barbuda", "Cayman Islands", "Seychelles", "Malawi", "Zambia",
+            "Lesotho", "Rwanda", "Tanzania", "Gambia", "Sierra Leone", "Bangladesh", "Maldives", "Brunei", "Vanuatu", "Tonga"
+        ];
+
+        // Seed Medal Standings Object
+        let medalTally = {};
+        countries.forEach(c => medalTally[c] = { gold: 0, silver: 0, bronze: 0 });
+
+        // Sports definitions (30 total sports, containing 2-3 categories each)
+        // Mechanics: "timed" (lower is better, e.g., running), "distance" (higher is better, e.g., jumps), "weight" (higher is better)
+        const sportsData = [
+            { id: 1, name: "Athletics", cat: "100m Sprint", type: "timed", min: 8.5, max: 11.5 },
+            { id: 2, name: "Athletics", cat: "400m Race", type: "timed", min: 44.0, max: 52.0 },
+            { id: 3, name: "Athletics", cat: "Long Jump", type: "distance", min: 7.0, max: 8.8 },
+            { id: 4, name: "Swimming", cat: "50m Freestyle", type: "timed", min: 21.0, max: 25.0 },
+            { id: 5, name: "Swimming", cat: "100m Butterfly", type: "timed", min: 50.0, max: 57.0 },
+            { id: 6, name: "Weightlifting", cat: "Men's 85kg", type: "weight", min: 320, max: 400 },
+            { id: 7, name: "Weightlifting", cat: "Women's 69kg", type: "weight", min: 210, max: 260 },
+            { id: 8, name: "Cycling Track", cat: "Sprint", type: "timed", min: 9.5, max: 11.0 },
+            { id: 9, name: "Cycling Track", cat: "Time Trial", type: "timed", min: 58.0, max: 65.0 },
+            { id: 10, name: "Gymnastics", cat: "Floor Exercise", type: "distance", min: 12.0, max: 15.5 }, // Using distance logic for raw points
+            { id: 11, name: "Gymnastics", cat: "Vault", type: "distance", min: 13.0, max: 16.0 },
+            { id: 12, name: "Shooting", cat: "10m Air Rifle", type: "distance", min: 240, max: 252 },
+            { id: 13, name: "Shooting", cat: "Trap", type: "distance", min: 110, max: 125 },
+            { id: 14, name: "Archery", cat: "Individual Recurve", type: "distance", min: 650, max: 700 },
+            { id: 15, name: "Archery", cat: "Compound", type: "distance", min: 680, max: 710 },
+            { id: 16, name: "Rowing", cat: "Single Sculls", type: "timed", min: 400, max: 440 },
+            { id: 17, name: "Rowing", cat: "Double Sculls", type: "timed", min: 370, max: 410 },
+            { id: 18, name: "Triathlon", cat: "Individual", type: "timed", min: 6200, max: 6800 },
+            { id: 19, name: "Canoe Sprint", cat: "K-1 200m", type: "timed", min: 34.0, max: 40.0 },
+            { id: 20, name: "Canoe Sprint", cat: "C-1 200m", type: "timed", min: 38.0, max: 44.0 },
+            { id: 21, name: "Judo", cat: "Heavyweight Pool", type: "distance", min: 10, max: 100 },
+            { id: 22, name: "Wrestling", cat: "Freestyle 74kg", type: "distance", min: 5, max: 50 },
+            { id: 23, name: "Boxing", cat: "Flyweight Points", type: "distance", min: 15, max: 30 },
+            { id: 24, name: "Boxing", cat: "Welterweight Points", type: "distance", min: 15, max: 35 },
+            { id: 25, name: "Diving", cat: "3m Springboard", type: "distance", min: 400, max: 520 },
+            { id: 26, name: "Diving", cat: "10m Platform", type: "distance", min: 420, max: 550 },
+            { id: 27, name: "Badminton", cat: "Tournament Points", type: "distance", min: 50, max: 100 },
+            { id: 28, name: "Table Tennis", cat: "Singles Points", type: "distance", min: 40, max: 80 },
+            { id: 29, name: "Squash", cat: "Singles Points", type: "distance", min: 33, max: 99 },
+            { id: 30, name: "Lawn Bowls", cat: "Singles Match", type: "distance", min: 10, max: 21 }
+        ];
+
+        // --- STATE MANAGEMENT ---
+        let playerCountry = "";
+        let currentEvent = null;
+        let currentChance = 0;
+        let playerRoundScores = [];
+        let runningTileSpeeds = [];
+
+        // --- INITIALIZATION ---
+        window.onload = function() {
+            const select = document.getElementById("nation-select");
+            countries.sort().forEach(country => {
+                let opt = document.createElement("option");
+                opt.value = country;
+                opt.textContent = country;
+                select.appendChild(opt);
+            });
+            updateMedalTallyDisplay();
+        };
+
+        function startGame() {
+            playerCountry = document.getElementById("nation-select").value;
+            document.getElementById("setup-screen").classList.add("hidden");
+            document.getElementById("game-screen").classList.remove("hidden");
+            generateSchedule();
+        }
+
+        function generateSchedule() {
+            const tbody = document.getElementById("schedule-body");
+            tbody.innerHTML = "";
+            
+            sportsData.forEach((sport, index) => {
+                let row = document.createElement("tr");
+                row.id = `sport-row-${index}`;
+                row.innerHTML = `
+                    <td>${sport.name}</td>
+                    <td>${sport.cat}</td>
+                    <td id="status-${index}">Scheduled</td>
+                    <td><button id="btn-${index}" onclick="startEvent(${index})">Compete</button></td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // --- GAME PLAY LOGIC ---
+        function startEvent(index) {
+            currentEvent = { ...sportsData[index], index: index };
+            currentChance = 0;
+            playerRoundScores = [];
+            
+            document.getElementById("arena-card").classList.remove("hidden");
+            document.getElementById("arena-results").classList.add("hidden");
+            document.getElementById("tile-container").classList.remove("hidden");
+            document.getElementById("game-instruction").classList.remove("hidden");
+            document.getElementById("arena-title").textContent = `Arena: ${currentEvent.name} (${currentEvent.cat})`;
+            
+            setupNextChance();
+        }
+
+        function setupNextChance() {
+            currentChance++;
+            document.getElementById("chance-counter").textContent = `Chance: ${currentChance} / 10`;
+            
+            // Calculate progress string
+            let totalSoFar = calculateTotal(playerRoundScores, currentEvent.type);
+            let unit = currentEvent.type === "timed" ? "s" : currentEvent.type === "weight" ? "kg" : "m";
+            document.getElementById("current-score").textContent = `Your Progress: ${totalSoFar.toFixed(2)} ${unit}`;
+
+            // Generate 4 random variants based on the sport parameters split over 10 ticks
+            runningTileSpeeds = [];
+            for (let i = 0; i < 4; i++) {
+                // Determine raw slice output per round
+                let base = (currentEvent.min + Math.random() * (currentEvent.max - currentEvent.min)) / 10;
+                runningTileSpeeds.push(base);
+            }
+
+            // Reset Tile visual states
+            const tiles = document.querySelectorAll(".tile");
+            tiles.forEach(tile => {
+                tile.textContent = "?";
+                tile.classList.remove("revealed");
+            });
+        }
+
+        function chooseTile(tileIndex) {
+            let chosenVal = runningTileSpeeds[tileIndex];
+            playerRoundScores.push(chosenVal);
+
+            const tiles = document.querySelectorAll(".tile");
+            tiles.forEach((tile, idx) => {
+                let unit = currentEvent.type === "timed" ? "s" : currentEvent.type === "weight" ? "kg" : "m";
+                tile.textContent = `${(runningTileSpeeds[idx]).toFixed(2)}${unit}`;
+                tile.classList.add("revealed");
+            });
+
+            setTimeout(() => {
+                if (currentChance < 10) {
+                    setupNextChance();
+                } else {
+                    processResults();
+                }
+            }, 1200);
+        }
+
+        function calculateTotal(arr, type) {
+            let sum = arr.reduce((a, b) => a + b, 0);
+            if (type === "timed") {
+                // For timed events, the accumulated sum acts directly as total time execution
+                return sum;
+            }
+            return sum; // High cumulative total score for weights & distances
+        }
+
+        // --- SIMULATION & RESULTS ---
+        function processResults() {
+            document.getElementById("tile-container").classList.add("hidden");
+            document.getElementById("game-instruction").classList.add("hidden");
+            document.getElementById("arena-results").classList.remove("hidden");
+
+            let finalPlayerScore = calculateTotal(playerRoundScores, currentEvent.type);
+            
+            // Filter 9 distinct AI countries from the pool of 50 (Excluding Player)
+            let competitors = countries.filter(c => c !== playerCountry);
+            // Simulate realistic participation filter: shuffle and pick 9
+            competitors = competitors.sort(() => 0.5 - Math.random()).slice(0, 9);
+            
+            let leaderboard = [];
+            // Push player
+            leaderboard.push({ nation: playerCountry, score: finalPlayerScore });
+
+            // Push simulated data for the AI competitors
+            competitors.forEach(country => {
+                let aiScores = [];
+                for(let i=0; i<10; i++) {
+                    aiScores.push((currentEvent.min + Math.random() * (currentEvent.max - currentEvent.min)) / 10);
+                }
+                leaderboard.push({ nation: country, score: calculateTotal(aiScores, currentEvent.type) });
+            });
+
+            // Sort leaderboard depending on performance rules
+            if (currentEvent.type === "timed") {
+                leaderboard.sort((a, b) => a.score - b.score); // Faster (lower) time wins
+            } else {
+                leaderboard.sort((a, b) => b.score - a.score); // Higher value wins
+            }
+
+            // Award Medals
+            medalTally[leaderboard[0].nation].gold++;
+            medalTally[leaderboard[1].nation].silver++;
+            medalTally[leaderboard[2].nation].bronze++;
+
+            // Render Results Table
+            let unit = currentEvent.type === "timed" ? "s" : currentEvent.type === "weight" ? "kg" : "m";
+            const tbody = document.getElementById("results-body");
+            tbody.innerHTML = "";
+            
+            leaderboard.forEach((pos, rank) => {
+                let medalSpan = "";
+                if (rank === 0) medalSpan = '<span class="medal g"></span>';
+                if (rank === 1) medalSpan = '<span class="medal s"></span>';
+                if (rank === 2) medalSpan = '<span class="medal b"></span>';
+
+                let row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${rank + 1} ${medalSpan}</td>
+                    <td><strong>${pos.nation}</strong></td>
+                    <td>${pos.score.toFixed(2)} ${unit}</td>
+                `;
+                tbody.appendChild(row);
+            });
+
+            // Update UI lists
+            updateMedalTallyDisplay();
+            
+            // Mark Schedule Item Completed
+            document.getElementById(`status-${currentEvent.index}`).textContent = "Completed";
+            let actionBtn = document.getElementById(`btn-${currentEvent.index}`);
+            actionBtn.disabled = true;
+            actionBtn.textContent = "Finished";
+            actionBtn.style.backgroundColor = "#ccc";
+        }
+
+        function updateMedalTallyDisplay() {
+            const tbody = document.getElementById("tally-body");
+            tbody.innerHTML = "";
+
+            // Convert map into array & sort by Gold, then Silver, then Bronze
+            let sortedTally = Object.keys(medalTally).map(key => {
+                return { name: key, ...medalTally[key] };
+            }).sort((a, b) => {
+                if (b.gold !== a.gold) return b.gold - a.gold;
+                if (b.silver !== a.silver) return b.silver - a.silver;
+                return b.bronze - a.bronze;
+            });
+
+            sortedTally.forEach((rowObj, index) => {
+                let row = document.createElement("tr");
+                if (rowObj.name === playerCountry) {
+                    row.style.backgroundColor = "#fffde0";
+                }
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td><strong>${rowObj.name}</strong></td>
+                    <td>${rowObj.gold}</td>
+                    <td>${rowObj.silver}</td>
+                    <td>${rowObj.bronze}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function closeArena() {
+            document.getElementById("arena-card").classList.add("hidden");
+            window.scrollTo({top: 0, behavior: 'smooth'});
+        }
+    </script>
+</body>
+</html>
